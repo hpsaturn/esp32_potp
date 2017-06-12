@@ -35,3 +35,8 @@
 .pioenvs
 .piolibdeps
 
+# Project
+secrets.load
+libraries
+*tags*
+
