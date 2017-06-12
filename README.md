@@ -8,9 +8,9 @@ Before install [PlatformIO](http://platformio.org/) open source ecosystem for Io
 
 ## Compile and firmware upload
 
-### Setup WiFi
+#### Setup WiFi
 
-Before, please setup your WiFi on secrets.load.sample and run:
+Before, please setup your WiFi on `secrets.load.sample` and run:
 
 ``` bash
 git clone https://github.com/hpsaturn/esp32_wemos_oled.git
@@ -18,17 +18,15 @@ cd esp32_wemos_oled
 cp secrets.load.sample secrets.load
 chmod 755 secrets.load
 export PLATFORMIO_BUILD_FLAGS=`bash ./secrets.load`
-pio run
-
 ```
 
-### Compile firmware and deploy
+#### Compile firmware and deploy
 
 ``` javascript
 platformio run --target upload
 ``` 
 
-### OTA Updates (Optional)
+#### OTA Updates (Optional)
 
 For faster firmare updates via air (OTA)
 
@@ -40,13 +38,13 @@ platformio run --target upload --upload-port 192.168.1.107
 
 ![alt text][drv8825]
 
-[drv8825]:https://a.pololu-files.com/picture/0J4233.600.png?665d623ba84232de64511d8aa6644836  "General connection for WeMOS OLED"
+[drv8825]:https://github.com/hpsaturn/esp32_wemos_oled/blob/master/assets/diagram00.jpg  "General connection for WeMOS OLED"
 
 ## Board WeMOS like OLED:
 
 ![alt text][wemos_oled]
 
-[wemos_oled]:https://a.pololu-files.com/picture/0J4233.600.png?665d623ba84232de64511d8aa6644836  "WeMOS OLED like"
+[wemos_oled]:https://github.com/hpsaturn/esp32_wemos_oled/blob/master/assets/wemos_oled_00.jpg  "WeMOS OLED like"
 
 
 
