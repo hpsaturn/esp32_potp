@@ -16,13 +16,13 @@
 
 #include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
 #include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
-#include "OLEDDisplayUi.h"
 
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include "esp_deep_sleep.h"
+#include "esp_wifi.h"
 
 // Define on platformio.ini or env
 const char *ssid         = WIFI_SSID;
@@ -33,6 +33,8 @@ SSD1306  display(0x3c, 5, 4);
 int threshold = 40;
 bool touch2detected = false;
 bool touch3detected = false;
+int touch2count = 0;
+int touch3count = 0;
 
 void gotTouch2(){
  touch2detected = true;
@@ -94,7 +96,7 @@ void setup() {
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    display.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
+    display.drawProgressBar(4, 32, 120, 6, progress / (total / 100) );
     display.display();
   });
 
@@ -120,16 +122,41 @@ void setup() {
   Serial.println("== Setup ready ==");
 }
 
+void processTouch2(){
+  touch2count=0;
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Suspending..");
+  display.display();
+  delay(3000);
+  display.clear();
+  display.display();
+  esp_wifi_set_ps(WIFI_PS_MODEM);
+  esp_wifi_set_mode(WIFI_MODE_NULL);
+  //esp_deep_sleep_enable_timer_wakeup(10000000);
+  esp_deep_sleep_enable_touchpad_wakeup();
+  esp_deep_sleep_start();
+}
+
+void processTouch3(){
+  touch3count=0;
+  ESP.restart();
+}
+
 void loop() {
+
   ArduinoOTA.handle();
 
   if(touch2detected){
     touch2detected = false;
     Serial.println("Touch 2 (GPIO2) detected");
+    if(touch2count++>7)processTouch2();
   }
   if(touch3detected){
     touch3detected = false;
     Serial.println("Touch 3 (GPIO15) detected");
+    if(touch3count++>5)processTouch3();
   }
 
 }
