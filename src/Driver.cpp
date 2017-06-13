@@ -29,6 +29,18 @@ const char *password     = WIFI_PASS;
 // Initialize the OLED display using Wire library
 SSD1306  display(0x3c, 5, 4);
 
+int threshold = 40;
+bool touch1detected = false;
+bool touch5detected = false;
+
+void gotTouch1(){
+ touch1detected = true;
+}
+
+void gotTouch5(){
+ touch5detected = true;
+}
+
 void setup() {
 
   Serial.begin(115200);
@@ -95,9 +107,24 @@ void setup() {
   display.setFont(ArialMT_Plain_10);
   display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Ready for OTA:\n" + WiFi.localIP().toString());
   display.display();
+
+  // Init touch callbacks
+  Serial.println("ESP32 Touch Interrupt Test");
+  touchAttachInterrupt(T2, gotTouch1, threshold);
+  touchAttachInterrupt(T5, gotTouch5, threshold);
 }
 
 void loop() {
   ArduinoOTA.handle();
+
+  if(touch1detected){
+    touch1detected = false;
+    Serial.println("Touch 1 detected");
+  }
+  if(touch5detected){
+    touch5detected = false;
+    Serial.println("Touch 5 detected");
+  }
+
 }
 
