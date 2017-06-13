@@ -35,6 +35,7 @@ bool touch2detected = false;
 bool touch3detected = false;
 int touch2count = 0;
 int touch3count = 0;
+long poweroff = 0;
 
 void gotTouch2(){
  touch2detected = true;
@@ -122,7 +123,7 @@ void setup() {
   Serial.println("== Setup ready ==");
 }
 
-void processTouch2(){
+void hibernate(){
   touch2count=0;
   display.clear();
   display.setFont(ArialMT_Plain_10);
@@ -139,7 +140,7 @@ void processTouch2(){
   esp_deep_sleep_start();
 }
 
-void processTouch3(){
+void reboot(){
   touch3count=0;
   ESP.restart();
 }
@@ -151,12 +152,17 @@ void loop() {
   if(touch2detected){
     touch2detected = false;
     Serial.println("Touch 2 (GPIO2) detected");
-    if(touch2count++>7)processTouch2();
+    if(touch2count++>7)hibernate();
   }
   if(touch3detected){
     touch3detected = false;
     Serial.println("Touch 3 (GPIO15) detected");
-    if(touch3count++>5)processTouch3();
+    if(touch3count++>5)reboot();
+  }
+
+  if(poweroff++>3000000){
+    poweroff=0;
+    hibernate();
   }
 
 }
