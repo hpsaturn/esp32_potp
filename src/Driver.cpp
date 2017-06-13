@@ -22,6 +22,7 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include "esp_deep_sleep.h"
 
 // Define on platformio.ini or env
 const char *ssid         = WIFI_SSID;
@@ -30,27 +31,28 @@ const char *password     = WIFI_PASS;
 SSD1306  display(0x3c, 5, 4);
 
 int threshold = 40;
-bool touch1detected = false;
-bool touch5detected = false;
+bool touch2detected = false;
+bool touch3detected = false;
 
-void gotTouch1(){
- touch1detected = true;
+void gotTouch2(){
+ touch2detected = true;
 }
 
-void gotTouch5(){
- touch5detected = true;
+void gotTouch3(){
+ touch3detected = true;
 }
 
 void setup() {
 
   Serial.begin(115200);
   Serial.println();
-  Serial.println("Booting");
+  Serial.println("== ESP32 Booting ==");
 
   display.init();
   display.flipScreenVertically();
   display.setContrast(255);
   display.clear();
+  Serial.println("OLED ready..");
 
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -69,7 +71,7 @@ void setup() {
     delay(3000);
     ESP.restart();
   }
-    
+  Serial.println("WiFi ready..");
   display.clear();
 
   if (!MDNS.begin("esp32potp")) {
@@ -80,8 +82,10 @@ void setup() {
     ESP.restart();
   }
 
+  Serial.println("OTA updates..");
   ArduinoOTA.begin();
   ArduinoOTA.onStart([]() {
+    Serial.println("ArduinoOTA starting..");
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -95,6 +99,7 @@ void setup() {
   });
 
   ArduinoOTA.onEnd([]() {
+    Serial.println("OTA complete.");
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -109,21 +114,22 @@ void setup() {
   display.display();
 
   // Init touch callbacks
-  Serial.println("ESP32 Touch Interrupt Test");
-  touchAttachInterrupt(T2, gotTouch1, threshold);
-  touchAttachInterrupt(T5, gotTouch5, threshold);
+  Serial.println("Touch callback..");
+  touchAttachInterrupt(T2, gotTouch2, threshold);
+  touchAttachInterrupt(T3, gotTouch3, threshold);
+  Serial.println("== Setup ready ==");
 }
 
 void loop() {
   ArduinoOTA.handle();
 
-  if(touch1detected){
-    touch1detected = false;
-    Serial.println("Touch 1 detected");
+  if(touch2detected){
+    touch2detected = false;
+    Serial.println("Touch 2 (GPIO2) detected");
   }
-  if(touch5detected){
-    touch5detected = false;
-    Serial.println("Touch 5 detected");
+  if(touch3detected){
+    touch3detected = false;
+    Serial.println("Touch 3 (GPIO15) detected");
   }
 
 }
