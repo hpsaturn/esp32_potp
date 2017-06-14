@@ -51,10 +51,13 @@ void gotTouch3(){
  touch3detected = true;
 }
 
+void reboot(){
+  Serial.println("Process Reboot..");
+  ESP.restart();
+}
+
 void enableOTA(){
   ArduinoOTA.begin();
-  ArduinoOTA.setHostname("esp32potp");
-  WiFi.setHostname("esp32potp");
   ArduinoOTA.onStart([]() {
       Serial.println("ArduinoOTA starting..");
       display.clear();
@@ -108,6 +111,7 @@ void initWiFi(){
 
   if(WiFi.isConnected()){
     Serial.println("WiFi ready");
+    WiFi.setHostname("esp32potp");
     display.clear();
 
     if (!MDNS.begin("esp32potp")) {
@@ -116,6 +120,7 @@ void initWiFi(){
       display.display();
       delay(3000);
     }
+
     if(!isEnableOTA)enableOTA();
 
     // Align text vertical/horizontal center
@@ -134,10 +139,11 @@ void initWiFi(){
     display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display.display();
   }
+
 }
 
 void showWelcome(){
-  Serial.println("onWelcomeScreen");
+  Serial.println("Welcome ready");
   isPowerOff=false;
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -149,10 +155,11 @@ void showWelcome(){
 
 void disableWifi(){
   if(isWifiEnable){ 
+    Serial.println("Disabling WiFi..");
     esp_wifi_set_ps(WIFI_PS_MODEM);
     esp_wifi_set_mode(WIFI_MODE_NULL);
     isWifiEnable=false;
-    showWelcome();
+    reboot();
   }
 }
 
@@ -170,11 +177,6 @@ void suspend(){
   //esp_deep_sleep_enable_timer_wakeup(10000000);
   esp_deep_sleep_enable_touchpad_wakeup();
   esp_deep_sleep_start();
-}
-
-void reboot(){
-  Serial.println("Process Reboot..");
-  ESP.restart();
 }
 
 void setup() {
@@ -223,15 +225,15 @@ void loop() {
     }
   }
 
-  delay(10); // fix for OTA upload freeze
-
   /*
-  if(poweroff++>9000000){
+  if(poweroff++>1000000){
     Serial.println("Auto Power Off");
     poweroff=0;
     suspend();
   }
   */
+
+  delay(10); // fix for OTA upload freeze
 
 }
 
