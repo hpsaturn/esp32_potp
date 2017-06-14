@@ -24,16 +24,17 @@
 #include "esp_deep_sleep.h"
 #include "esp_wifi.h"
 
-// Define on platformio.ini or env
-const char *ssid         = WIFI_SSID;
-const char *password     = WIFI_PASS;
+#define MAX_RECONNECT 1
+#define THRESHOLD 80
+
 // Initialize the OLED display using Wire library
 SSD1306  display(0x3c, 5, 4);
-
-#define MAX_RECONNECT 1
+// WiFi setup, define secrets on global enveiroment
+const char *ssid         = WIFI_SSID;
+const char *password     = WIFI_PASS;
 bool isWifiEnable = false;
 int reconnect = 0;
-int threshold = 80;
+// Touche keys setup
 bool touch2detected = false;
 bool touch3detected = false;
 int touch2count = 0;
@@ -61,10 +62,9 @@ void setup() {
   Serial.println("OLED ready");
 
   // Init touch callbacks
-  touchAttachInterrupt(T2, gotTouch2, threshold);
-  touchAttachInterrupt(T3, gotTouch3, threshold);
+  touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
+  touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
   Serial.println("Buttons ready");
-
 
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
