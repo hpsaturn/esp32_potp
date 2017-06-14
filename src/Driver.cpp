@@ -223,6 +223,8 @@ void loop() {
     }
   }
 
+  delay(10); // fix for OTA upload freeze
+
   /*
   if(poweroff++>9000000){
     Serial.println("Auto Power Off");
