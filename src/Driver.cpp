@@ -30,7 +30,7 @@ const char *password     = WIFI_PASS;
 // Initialize the OLED display using Wire library
 SSD1306  display(0x3c, 5, 4);
 
-int threshold = 40;
+int threshold = 80;
 bool touch2detected = false;
 bool touch3detected = false;
 int touch2count = 0;
