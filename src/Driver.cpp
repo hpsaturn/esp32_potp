@@ -15,15 +15,15 @@
  */
 
 #include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
-#include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
+#include "SSD1306Wire.h" // alias for `#include "SSD1306Wire.h"`
 #include "WiFiManager.h"
 #include "esp_deep_sleep.h"
 
 #define THRESHOLD 80
 
 // Initialize the OLED display using Wire library
-SSD1306  display(0x3c, 5, 4);
-WiFiManager wifi(display);
+SSD1306Wire display(0x3c, 5, 4);
+WiFiManager wifi(&display);
 // Power vars
 unsigned long poweroff = 0;
 bool isPowerOff = false;

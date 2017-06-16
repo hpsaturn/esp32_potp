@@ -11,26 +11,38 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
+#include "OLEDDisplay.h"
 
 #define MAX_RECONNECT 1
 
 class WiFiManager
 {
+
   public:
-    WiFiManager(SSD1306& d);
+
+    WiFiManager(OLEDDisplay *d);
+
+    OLEDDisplay *display;
+
     void enableOTA();
+
     void initWiFi();
+
     void disableWifi();
+
     bool isWifiEnable = false;
 
   private:
-    SSD1306 display;
+
     // WiFi setup, define secrets on global enveiroment
     const char *ssid         = WIFI_SSID;
+    
     const char *password     = WIFI_PASS;
+
     bool isEnableOTA = false;
+
     int reconnect = 0;
+
 };
 
 #endif
