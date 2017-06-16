@@ -19,18 +19,18 @@ void WiFiManager::enableOTA(){
       display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
       display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "OTA Update");
       display->display();
-      });
+  });
 
   ArduinoOTA.onProgress([&](unsigned int progress, unsigned int total) {
       display->drawProgressBar(4, 32, 120, 6, progress / (total / 100) );
       display->display();
-      });
+  });
 
   ArduinoOTA.onError([&](ota_error_t err) {
       Serial.print("OTA error: ");
       Serial.println(err);
       ESP.restart();
-      });
+  });
 
   ArduinoOTA.onEnd([&]() {
       Serial.println("OTA complete.");
@@ -39,13 +39,13 @@ void WiFiManager::enableOTA(){
       display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
       display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Restart");
       display->display();
-      });
+  });
 
   isEnableOTA=true;
 
 }
 
-void WiFiManager::initWiFi(){
+void WiFiManager::init(){
 
   display->clear();
   display->setFont(ArialMT_Plain_10);
@@ -62,19 +62,13 @@ void WiFiManager::initWiFi(){
     Serial.println(reconnect);
     reconnect++;
   }
+
   reconnect=0;
 
   if(WiFi.isConnected()){
     Serial.println("WiFi ready");
     WiFi.setHostname("esp32potp");
     display->clear();
-
-    if (!MDNS.begin("esp32potp")) {
-      Serial.println("Error setting up MDNS responder!");
-      display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "MDNS Setup Failed!\nPress B to reboot");
-      display->display();
-      delay(3000);
-    }
 
     if(!isEnableOTA)enableOTA();
 

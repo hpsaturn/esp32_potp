@@ -115,7 +115,7 @@ void loop() {
       Serial.println("Touch 3 (GPIO15) reached");
       touch3count=0;
       if(wifi.isWifiEnable)wifi.disableWifi();
-      else wifi.initWiFi();
+      else wifi.init();
     }
   }
 

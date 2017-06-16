@@ -24,11 +24,11 @@ class WiFiManager
 
     OLEDDisplay *display;
 
-    void enableOTA();
-
-    void initWiFi();
+    void init();
 
     void disableWifi();
+
+    void enableOTA();
 
     bool isWifiEnable = false;
 
