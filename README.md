@@ -12,7 +12,13 @@ PlatformIO DIY project for WeMOS like board with ESP32 and OLED SSD1306 display,
 - [X] Wifi OTA Handler
 - [X] DeepSleep mode (testing)
 - [X] GUI overlay tests
-- [ ] Android POTP sync 
+- [X] Sync RTC via Bluetooth
+- [ ] RFC 4793 implementation
+- [ ] GUI Page viewer for OTP codes
+- [ ] Android GoogleAuth POTP sync
+- [ ] Vulnerability security test 
+- [ ] 3D print case?
+- [ ] Recine case?
 
 ## DIY Building
 
