@@ -22,9 +22,9 @@ PlatformIO DIY project for WeMOS like board with ESP32 and OLED SSD1306 display,
 
 ## DIY Building
 
-## Framework and libraries dependencies
+## Dependencies
 
-Before install [PlatformIO](http://platformio.org/) open source ecosystem for IoT development, then install libraries:
+Before install [PlatformIO](http://platformio.org/) open source ecosystem for IoT development.
 
 ## Compile and firmware upload
 
