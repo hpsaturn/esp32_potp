@@ -28,6 +28,7 @@
 #include "apps/sntp/sntp.h"
 
 // The shared secret is MyLegoDoor
+// ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
 uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
 
 TOTP totp = TOTP(hmacKey, 10);
@@ -87,8 +88,7 @@ void suspend(){
   esp_deep_sleep_start();
 }
 
-static void initialize_sntp(void)
-{
+static void initialize_sntp(void){
     Serial.println("Initializing SNTP");
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
@@ -161,12 +161,23 @@ void loop() {
   long GMT = time(&now);
 
   char* newCode = totp.getCode(GMT);
+  
   if(strcmp(code, newCode) != 0) {
     strcpy(code, newCode);
-    Serial.print(timeinfo.tm_year);
-    Serial.print(" [");
-    Serial.print(code);
-    Serial.println("]");
+    if (timeinfo.tm_year < (2016 - 1900)) {
+      Serial.println("Time is not set yet. Connecting to WiFi and getting time over NTP.");
+    }else{
+      Serial.print(timeinfo.tm_year);
+      Serial.print(" [");
+      Serial.print(code);
+      Serial.println("]");
+      display.clear();
+      display.setFont(ArialMT_Plain_16);
+      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display.drawString(DISPLAY_WIDTH/2, (DISPLAY_HEIGHT/2), "TOTP CODE:");
+      display.drawString(DISPLAY_WIDTH/2, (DISPLAY_HEIGHT/2)+16, code);
+      display.display();
+    }
   }
 
   delay(10); // fix for OTA upload freeze
