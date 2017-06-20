@@ -24,7 +24,7 @@ class WiFiManager
 
     OLEDDisplay *display;
 
-    void init();
+    bool init();
 
     void disableWifi();
 

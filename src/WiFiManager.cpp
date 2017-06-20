@@ -45,7 +45,7 @@ void WiFiManager::enableOTA(){
 
 }
 
-void WiFiManager::init(){
+bool WiFiManager::init(){
 
   display->clear();
   display->setFont(ArialMT_Plain_10);
@@ -53,6 +53,8 @@ void WiFiManager::init(){
   String msg = "WiFi Setup\nConnecting to ";
   display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10,msg+ssid);
   display->display();
+  Serial.print("WiFi Setup => connecting to ");
+  Serial.println(ssid);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin (ssid, password);
@@ -88,6 +90,8 @@ void WiFiManager::init(){
     display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display->display();
   }
+
+  return isWifiEnable;
 
 }
 
