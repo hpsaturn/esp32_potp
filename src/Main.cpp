@@ -13,21 +13,18 @@
  * platformio run -e lolin32 --target upload
  *
  */
-
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
 #include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
 #include "SSD1306Wire.h" // alias for `#include "SSD1306Wire.h"`
 #include "WiFiManager.h"
 #include "esp_deep_sleep.h"
 #include "sha1.h"
 #include "TOTP.h"
-#include <string.h>
-#include <time.h>
-#include <sys/time.h>
-
 #include "lwip/err.h"
 #include "apps/sntp/sntp.h"
 
-// The shared secret is MyLegoDoor
 // ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
 //uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
 uint8_t hmacKey[] = {0xea,0x41,0x68,0x5c,0x9b,0x10,0x13,0x5d,0x8c,0xa0,0x35,0x05,0x38,0xcb,0xa9,0x96,0x75,0xa0,0x5a,0xaf};
@@ -89,11 +86,45 @@ void suspend(){
   esp_deep_sleep_start();
 }
 
-static void initialize_sntp(void){
-    Serial.println("Initializing SNTP");
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
-    sntp_init();
+static void initialize_sntp(void) {
+  Serial.println("Initializing SNTP");
+  sntp_setoperatingmode(SNTP_OPMODE_POLL);
+  sntp_setservername(0, "pool.ntp.org");
+  sntp_init();
+}
+
+static void obtain_time(void) {
+  initialize_sntp();
+  // wait for time to be set
+  time_t now = 0;
+  struct tm timeinfo = {0};
+  int retry = 0;
+  const int retry_count = 10;
+  Serial.print("Waiting for system time to be set.");
+  while (timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
+    Serial.print(".");
+    delay(100);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+  }
+  Serial.println("ready.");
+}
+
+static void printTime() {
+  time_t now = 0;
+  struct tm timeinfo;
+  time(&now);
+  char strftime_buf[64];
+  // Set timezone to Eastern Standard Time and print local time
+  setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
+  tzset();
+  localtime_r(&now, &timeinfo);
+  strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+  Serial.print("The current date/time in New York is: ");
+  Serial.println(strftime_buf);
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.drawString(DISPLAY_WIDTH / 2, ((DISPLAY_HEIGHT / 2)-24), strftime_buf);
 }
 
 void setup() {
@@ -113,40 +144,64 @@ void setup() {
   touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
   Serial.println("Buttons ready");
 
+  showWelcome();
+  Serial.println("== Setup ready ==");
+}
+
+void showTOTPCode() {
   time_t now;
   struct tm timeinfo;
-  time(&now);
-
-  showWelcome();
-
-  Serial.println("== Setup ready ==");
+  char *newCode = totp.getCode(time(&now));
+  localtime_r(&now, &timeinfo);
+  if (strcmp(code, newCode) != 0) {
+    strcpy(code, newCode);
+    if (timeinfo.tm_year < (2016 - 1900)) {
+      Serial.println(
+          "Time is not set yet. Connecting to WiFi and getting time over NTP.");
+    } else {
+      Serial.print(timeinfo.tm_year);
+      Serial.print(" [");
+      Serial.print(code);
+      Serial.println("]"); 
+    }
+  }
+  display.clear();
+  printTime();
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, code);
+  display.display();
 }
 
 void loop() {
 
-  if(wifi.isWifiEnable)ArduinoOTA.handle();
+  if (wifi.isWifiEnable)
+    ArduinoOTA.handle();
 
-  if(touch2detected){
+  if (touch2detected) {
     touch2detected = false;
-    if(touch2count++>10){
+    if (touch2count++ > 10) {
       Serial.println("Touch 2 (GPIO2) reached");
-      touch2count=0;
-      if(isPowerOff)showWelcome();
-      else suspend();
+      touch2count = 0;
+      if (isPowerOff)
+        showWelcome();
+      else
+        suspend();
     }
   }
 
-  if(touch3detected){
+  if (touch3detected) {
     touch3detected = false;
-    if(touch3count++>5){
+    if (touch3count++ > 5) {
       Serial.println("Touch 3 (GPIO15) reached");
-      touch3count=0;
-      if(wifi.isWifiEnable)wifi.disableWifi();
-      else if(wifi.init()){
-        initialize_sntp();
-      }
+      touch3count = 0;
+      if (wifi.isWifiEnable) wifi.disableWifi();
+      else if (wifi.init()) obtain_time();
     }
   }
+
+  if(!wifi.isWifiEnable)showTOTPCode();
+
+  delay(10); // fix for OTA upload freeze
 
   /*
   if(poweroff++>1000000){
@@ -155,33 +210,5 @@ void loop() {
     suspend();
   }
   */
-
-  time_t now;
-  struct tm timeinfo;
-  localtime_r(&now, &timeinfo);
-  long GMT = time(&now);
-
-  char* newCode = totp.getCode(GMT);
-  
-  if(strcmp(code, newCode) != 0) {
-    strcpy(code, newCode);
-    if (timeinfo.tm_year < (2016 - 1900)) {
-      Serial.println("Time is not set yet. Connecting to WiFi and getting time over NTP.");
-    }else{
-      Serial.print(timeinfo.tm_year);
-      Serial.print(" [");
-      Serial.print(code);
-      Serial.println("]");
-      display.clear();
-      display.setFont(ArialMT_Plain_16);
-      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display.drawString(DISPLAY_WIDTH/2, (DISPLAY_HEIGHT/2), "TOTP CODE:");
-      display.drawString(DISPLAY_WIDTH/2, (DISPLAY_HEIGHT/2)+16, code);
-      display.display();
-    }
-  }
-
-  delay(10); // fix for OTA upload freeze
-
 }
 
