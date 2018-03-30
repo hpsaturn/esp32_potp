@@ -24,6 +24,29 @@
 #include "TOTP.h"
 #include "lwip/err.h"
 #include "apps/sntp/sntp.h"
+#include "BLEDevice.h"
+//#include "BLEScan.h"
+
+// The remote service we wish to connect to.
+static BLEUUID serviceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
+// The characteristic of the remote service we are interested in.
+static BLEUUID    charUUID("0d563a58-196a-48ce-ace2-dfec78acc814");
+
+static BLEAddress *pServerAddress;
+static boolean doConnect = false;
+static boolean connected = false;
+static BLERemoteCharacteristic* pRemoteCharacteristic;
+
+static void notifyCallback(
+  BLERemoteCharacteristic* pBLERemoteCharacteristic,
+  uint8_t* pData,
+  size_t length,
+  bool isNotify) {
+    Serial.print("Notify callback for characteristic ");
+    Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
+    Serial.print(" of data length ");
+    Serial.println(length);
+}
 
 // ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
 //uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
