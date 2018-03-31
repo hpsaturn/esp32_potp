@@ -52,6 +52,81 @@ static void notifyCallback(
     Serial.println(length);
 }
 
+bool connectToServer(BLEAddress pAddress) {
+  Serial.print("Forming a connection to ");
+  Serial.println(pAddress.toString().c_str());
+
+  BLEClient*  pClient  = BLEDevice::createClient();
+  Serial.println(" - Created client");
+
+  // Connect to the remove BLE Server.
+  pClient->connect(pAddress);
+  Serial.println(" - Connected to server");
+
+  // Obtain a reference to the service we are after in the remote BLE server.
+  BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+  if (pRemoteService == nullptr) {
+    Serial.print("Failed to find our service UUID: ");
+    Serial.println(serviceUUID.toString().c_str());
+    return false;
+  }
+  Serial.println(" - Found our service");
+
+
+  // Obtain a reference to the characteristic in the service of the remote BLE server.
+  pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+  if (pRemoteCharacteristic == nullptr) {
+    Serial.print("Failed to find our characteristic UUID: ");
+    Serial.println(charUUID.toString().c_str());
+    return false;
+  }
+  Serial.println(" - Found our characteristic");
+
+  // Read the value of the characteristic.
+  std::string value = pRemoteCharacteristic->readValue();
+  Serial.print("The characteristic value was: ");
+  Serial.println(value.c_str());
+
+  pRemoteCharacteristic->registerForNotify(notifyCallback);
+}
+
+/**
+* Scan for BLE servers and find the first one that advertises the service we are looking for.
+*/
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  /**
+  * Called for each advertising BLE server.
+  */
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    Serial.print("BLE Advertised Device found: ");
+    Serial.println(advertisedDevice.toString().c_str());
+
+    // We have found a device, let us now see if it contains the service we are looking for.
+    if (advertisedDevice.haveServiceUUID() && advertisedDevice.getServiceUUID().equals(serviceUUID)) {
+
+      //
+      Serial.print("Found our device!  address: ");
+      advertisedDevice.getScan()->stop();
+
+      pServerAddress = new BLEAddress(advertisedDevice.getAddress());
+      doConnect = true;
+
+    } // Found our server
+  } // onResult
+}; // MyAdvertisedDeviceCallbacks
+
+bool setupBLE(){
+  Serial.println("Starting BLE..");
+  BLEDevice::init("");
+  // Retrieve a Scanner and set the callback we want to use to be informed when we
+  // have detected a new device.  Specify that we want active scanning and start the
+  // scan to run for 30 seconds.
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(30);
+}
+
 // ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
 //uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
 uint8_t hmacKey[] = {0xea,0x41,0x68,0x5c,0x9b,0x10,0x13,0x5d,0x8c,0xa0,0x35,0x05,0x38,0xcb,0xa9,0x96,0x75,0xa0,0x5a,0xaf};
@@ -150,27 +225,6 @@ static void printTime() {
   display.drawString(display.getWidth() / 2, ((display.getHeight()/ 2)-24), strftime_buf);
 }
 
-void setup() {
-
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("== ESP32 Booting ==");
-
-  display.init();
-  display.flipScreenVertically();
-  display.setContrast(255);
-  display.clear();
-  Serial.println("OLED ready");
-
-  // Init touch callbacks
-  touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
-  touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
-  Serial.println("Buttons ready");
-
-  showWelcome();
-  Serial.println("== Setup ready ==");
-}
-
 void showTOTPCode() {
   time_t now;
   struct tm timeinfo;
@@ -193,6 +247,26 @@ void showTOTPCode() {
   display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth() / 2, display.getHeight()/ 2, code);
   display.display();
+}
+
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println("== ESP32 Booting ==");
+
+  display.init();
+  display.flipScreenVertically();
+  display.setContrast(128);
+  display.clear();
+  Serial.println("OLED ready");
+  // Init touch callbacks
+  touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
+  touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
+  Serial.println("Buttons ready");
+  //setupBLE();
+  showWelcome();
+  Serial.println("== Setup ready ==");
 }
 
 void loop() {
@@ -223,16 +297,4 @@ void loop() {
       else if (wifi.init()) obtain_time();
     }
   }
-
-  //if(!wifi.isWifiEnable)showTOTPCode();
-
-  //delay(10); // fix for OTA upload freeze
-
-  /*
-  if(poweroff++>1000000){
-    Serial.println("Auto Power Off");
-    poweroff=0;
-    suspend();
-  }
-  */
 }
