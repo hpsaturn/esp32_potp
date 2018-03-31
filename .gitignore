@@ -40,3 +40,5 @@ secrets.load
 libraries
 *tags*
 
+.clang_complete
+.gcc-flags.json

@@ -104,16 +104,13 @@ void suspend(){
   delay(3000);
   display.clear();
   display.display();
-  //esp_deep_sleep_enable_timer_wakeup(10000000);
   esp_deep_sleep_enable_touchpad_wakeup();
   esp_deep_sleep_start();
 }
 
 static void initialize_sntp(void) {
   Serial.println("Initializing SNTP");
-  sntp_setoperatingmode(SNTP_OPMODE_POLL);
-  sntp_setservername(0, "pool.ntp.org");
-  sntp_init();
+  configTime(0,0,"pool.ntp.org");
 }
 
 static void obtain_time(void) {
@@ -138,13 +135,12 @@ static void printTime() {
   struct tm timeinfo;
   time(&now);
   char strftime_buf[64];
-  // Set timezone to Eastern Standard Time and print local time
-  setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
+  // Set timezone for America/Bogota
+  setenv("TZ", "<-05>5", 1);
   tzset();
   localtime_r(&now, &timeinfo);
   strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-  Serial.print("The current date/time in New York is: ");
-  Serial.println(strftime_buf);
+  //Serial.println(strftime_buf);
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.drawString(DISPLAY_WIDTH / 2, ((DISPLAY_HEIGHT / 2)-24), strftime_buf);
@@ -199,6 +195,8 @@ void loop() {
 
   if (wifi.isWifiEnable)
     ArduinoOTA.handle();
+  else
+    showTOTPCode();
 
   if (touch2detected) {
     touch2detected = false;
@@ -222,9 +220,9 @@ void loop() {
     }
   }
 
-  if(!wifi.isWifiEnable)showTOTPCode();
+  //if(!wifi.isWifiEnable)showTOTPCode();
 
-  delay(10); // fix for OTA upload freeze
+  //delay(10); // fix for OTA upload freeze
 
   /*
   if(poweroff++>1000000){

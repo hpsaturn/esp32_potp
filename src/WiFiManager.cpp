@@ -100,7 +100,7 @@ void WiFiManager::disableWifi(){
     Serial.println("Disabling WiFi..");
     esp_wifi_set_ps(WIFI_PS_MODEM);
     esp_wifi_set_mode(WIFI_MODE_NULL);
-    isWifiEnable=false;
+    WiFi.disconnect(true);
     ESP.restart();
   }
 }
