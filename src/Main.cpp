@@ -88,18 +88,18 @@ void showWelcome(){
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.setFont(ArialMT_Plain_16);
-  display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "ESP32 POTP");
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 POTP");
   display.display();
   delay(1000);
 }
 
 void suspend(){
   Serial.println("Process Suspend..");
-  isPowerOff=true; 
+  isPowerOff=true;
   display.clear();
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Suspending..");
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "Suspending..");
   display.display();
   delay(3000);
   display.clear();
@@ -143,7 +143,7 @@ static void printTime() {
   //Serial.println(strftime_buf);
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.drawString(DISPLAY_WIDTH / 2, ((DISPLAY_HEIGHT / 2)-24), strftime_buf);
+  display.drawString(display.getWidth() / 2, ((display.getHeight()/ 2)-24), strftime_buf);
 }
 
 void setup() {
@@ -181,13 +181,13 @@ void showTOTPCode() {
       Serial.print(timeinfo.tm_year);
       Serial.print(" [");
       Serial.print(code);
-      Serial.println("]"); 
+      Serial.println("]");
     }
   }
   display.clear();
   printTime();
   display.setFont(ArialMT_Plain_16);
-  display.drawString(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, code);
+  display.drawString(display.getWidth() / 2, display.getHeight()/ 2, code);
   display.display();
 }
 
@@ -232,4 +232,3 @@ void loop() {
   }
   */
 }
-

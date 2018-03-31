@@ -17,7 +17,7 @@ void WiFiManager::enableOTA(){
       display->clear();
       display->setFont(ArialMT_Plain_10);
       display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "OTA Update");
+      display->drawString(display->getWidth()/2, display->getHeight()/2 - 10, "OTA Update");
       display->display();
   });
 
@@ -37,7 +37,7 @@ void WiFiManager::enableOTA(){
       display->clear();
       display->setFont(ArialMT_Plain_10);
       display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Restart");
+      display->drawString(display->getWidth()/2, display->getHeight()/2, "Restart");
       display->display();
   });
 
@@ -51,7 +51,7 @@ bool WiFiManager::init(){
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   String msg = "WiFi Setup\nConnecting to ";
-  display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10,msg+ssid);
+  display->drawString(display->getWidth()/2, display->getHeight()/2 - 10,msg+ssid);
   display->display();
   Serial.print("WiFi Setup => connecting to ");
   Serial.println(ssid);
@@ -59,7 +59,7 @@ bool WiFiManager::init(){
   WiFi.mode(WIFI_STA);
   WiFi.begin (ssid, password);
 
-  while (WiFi.waitForConnectResult() != WL_CONNECTED && reconnect<MAX_RECONNECT) { 
+  while (WiFi.waitForConnectResult() != WL_CONNECTED && reconnect<MAX_RECONNECT) {
     Serial.print("Connection Failed! try to reconnect:");
     Serial.println(reconnect);
     reconnect++;
@@ -77,7 +77,7 @@ bool WiFiManager::init(){
     // Align text vertical/horizontal center
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display->setFont(ArialMT_Plain_10);
-    display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Ready for OTA:\n" + WiFi.localIP().toString());
+    display->drawString(display->getWidth()/2, display->getHeight()/2, "Ready for OTA:\n" + WiFi.localIP().toString());
     display->display();
     Serial.println("OTA ready");
 
@@ -87,7 +87,7 @@ bool WiFiManager::init(){
     Serial.println("WiFi setup failed!");
     isWifiEnable = false;
     display->clear();
-    display->drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
+    display->drawString(display->getWidth()/2, display->getHeight()/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display->display();
   }
 
@@ -96,7 +96,7 @@ bool WiFiManager::init(){
 }
 
 void WiFiManager::disableWifi(){
-  if(isWifiEnable){ 
+  if(isWifiEnable){
     Serial.println("Disabling WiFi..");
     esp_wifi_set_ps(WIFI_PS_MODEM);
     esp_wifi_set_mode(WIFI_MODE_NULL);
