@@ -1,18 +1,22 @@
 /**
- * @hpsaturn 2017
- *
- * Testing for WeMos board:
- * https://www.aliexpress.com/item/ESP8266-OLED-ESP32-wemos-for-arduino-ESP32-OLED-WiFi-Modules-Bluetooth-Dual-ESP-32-ESP-32S/32811052595.html
- *
- * Requeriments:
- *
- * platformio lib install 562
- *
- * Intall firmware with:
- *
- * platformio run -e lolin32 --target upload
- *
- */
+* [status: in developing]
+* Portable EAP Protected One-Time Password (EAP-POTP) or GoogleAuthenticator
+* hardware for provides two-factor user authentication.
+
+* This is a PlatformIO DIY project for WeMOS like board with ESP32 and
+* OLED SSD1306 display, see materials and instructions on:
+* https://github.com/hpsaturn/esp32_potp
+*
+* Before, please setup your WiFi on secrets.load.sample and run:
+* cp secrets.load.sample secrets.load
+* chmod 755 secrets.load
+* export PLATFORMIO_BUILD_FLAGS=`bash ./secrets.load`
+*
+* Build and run:
+* platformio run --target upload
+* platformio run --target upload --upload-port 192.168.x.x
+*/
+
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
