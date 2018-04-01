@@ -247,12 +247,11 @@ void showTOTPCode() {
   }
   display.clear();
   showTime();
-  display.setFont(ArialMT_Plain_16);
-  display.drawString(display.getWidth() / 2, display.getHeight()/ 2, code);
+  display.setFont(ArialMT_Plain_24);
+  display.drawString(display.getWidth() / 2, (display.getHeight()/ 2)+5, code);
   // show revision code
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  Serial.println(VERSION_CODE);
   display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
   display.display();
 }
@@ -272,9 +271,9 @@ void setup() {
   touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
   touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
   Serial.println("Buttons ready");
-  //setupBLE();
   showWelcome();
   Serial.println("== Setup ready ==");
+  setupBLE();
 }
 
 void loop() {
