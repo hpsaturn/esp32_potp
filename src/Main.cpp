@@ -23,7 +23,7 @@
 #include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
 #include "SSD1306Wire.h" // alias for `#include "SSD1306Wire.h"`
 #include "WiFiManager.h"
-#include "esp_deep_sleep.h"
+#include "esp_sleep.h"
 #include "sha1.h"
 #include "TOTP.h"
 #include "lwip/err.h"
@@ -187,7 +187,7 @@ void suspend(){
   display.clear();
   display.display();
   wifi.disableWifi();
-  esp_deep_sleep_enable_touchpad_wakeup();
+  esp_sleep_enable_touchpad_wakeup();
   esp_deep_sleep_start();
 }
 
