@@ -1,18 +1,22 @@
 /**
- * @hpsaturn 2017
- *
- * Testing for WeMos board:
- * https://www.aliexpress.com/item/ESP8266-OLED-ESP32-wemos-for-arduino-ESP32-OLED-WiFi-Modules-Bluetooth-Dual-ESP-32-ESP-32S/32811052595.html
- *
- * Requeriments:
- *
- * platformio lib install 562
- *
- * Intall firmware with:
- *
- * platformio run -e lolin32 --target upload
- *
- */
+* [status: in developing]
+* Portable EAP Protected One-Time Password (EAP-POTP) or GoogleAuthenticator
+* hardware for provides two-factor user authentication.
+
+* This is a PlatformIO DIY project for WeMOS like board with ESP32 and
+* OLED SSD1306 display, see materials and instructions on:
+* https://github.com/hpsaturn/esp32_potp
+*
+* Before, please setup your WiFi on secrets.load.sample and run:
+* cp secrets.load.sample secrets.load
+* chmod 755 secrets.load
+* export PLATFORMIO_BUILD_FLAGS=`bash ./secrets.load`
+*
+* Build and run:
+* platformio run --target upload
+* platformio run --target upload --upload-port 192.168.x.x
+*/
+
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
@@ -24,6 +28,107 @@
 #include "TOTP.h"
 #include "lwip/err.h"
 #include "apps/sntp/sntp.h"
+#include "BLEDevice.h"
+//#include "BLEScan.h"
+
+// The remote service we wish to connect to.
+static BLEUUID serviceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
+// The characteristic of the remote service we are interested in.
+static BLEUUID    charUUID("0d563a58-196a-48ce-ace2-dfec78acc814");
+
+String VERSION_CODE = "rev";
+int VCODE = SRC_REV;
+
+static BLEAddress *pServerAddress;
+static boolean doConnect = false;
+static boolean connected = false;
+static BLERemoteCharacteristic* pRemoteCharacteristic;
+
+static void notifyCallback(
+  BLERemoteCharacteristic* pBLERemoteCharacteristic,
+  uint8_t* pData,
+  size_t length,
+  bool isNotify) {
+    Serial.print("Notify callback for characteristic ");
+    Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
+    Serial.print(" of data length ");
+    Serial.println(length);
+}
+
+bool connectToServer(BLEAddress pAddress) {
+  Serial.print("Forming a connection to ");
+  Serial.println(pAddress.toString().c_str());
+
+  BLEClient*  pClient  = BLEDevice::createClient();
+  Serial.println(" - Created client");
+
+  // Connect to the remove BLE Server.
+  pClient->connect(pAddress);
+  Serial.println(" - Connected to server");
+
+  // Obtain a reference to the service we are after in the remote BLE server.
+  BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+  if (pRemoteService == nullptr) {
+    Serial.print("Failed to find our service UUID: ");
+    Serial.println(serviceUUID.toString().c_str());
+    return false;
+  }
+  Serial.println(" - Found our service");
+
+
+  // Obtain a reference to the characteristic in the service of the remote BLE server.
+  pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+  if (pRemoteCharacteristic == nullptr) {
+    Serial.print("Failed to find our characteristic UUID: ");
+    Serial.println(charUUID.toString().c_str());
+    return false;
+  }
+  Serial.println(" - Found our characteristic");
+
+  // Read the value of the characteristic.
+  std::string value = pRemoteCharacteristic->readValue();
+  Serial.print("The characteristic value was: ");
+  Serial.println(value.c_str());
+
+  pRemoteCharacteristic->registerForNotify(notifyCallback);
+}
+
+/**
+* Scan for BLE servers and find the first one that advertises the service we are looking for.
+*/
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  /**
+  * Called for each advertising BLE server.
+  */
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    Serial.print("BLE Advertised Device found: ");
+    Serial.println(advertisedDevice.toString().c_str());
+
+    // We have found a device, let us now see if it contains the service we are looking for.
+    if (advertisedDevice.haveServiceUUID() && advertisedDevice.getServiceUUID().equals(serviceUUID)) {
+
+      //
+      Serial.print("Found our device!  address: ");
+      advertisedDevice.getScan()->stop();
+
+      pServerAddress = new BLEAddress(advertisedDevice.getAddress());
+      doConnect = true;
+
+    } // Found our server
+  } // onResult
+}; // MyAdvertisedDeviceCallbacks
+
+bool setupBLE(){
+  Serial.println("Starting BLE..");
+  BLEDevice::init("");
+  // Retrieve a Scanner and set the callback we want to use to be informed when we
+  // have detected a new device.  Specify that we want active scanning and start the
+  // scan to run for 30 seconds.
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(30);
+}
 
 // ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
 //uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
@@ -65,32 +170,29 @@ void showWelcome(){
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.setFont(ArialMT_Plain_16);
-  display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "ESP32 POTP");
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 POTP");
   display.display();
   delay(1000);
 }
 
 void suspend(){
   Serial.println("Process Suspend..");
-  isPowerOff=true; 
+  isPowerOff=true;
   display.clear();
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.drawString(DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, "Suspending..");
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "Suspending..");
   display.display();
-  delay(3000);
+  delay(1000);
   display.clear();
   display.display();
-  //esp_deep_sleep_enable_timer_wakeup(10000000);
   esp_deep_sleep_enable_touchpad_wakeup();
   esp_deep_sleep_start();
 }
 
 static void initialize_sntp(void) {
   Serial.println("Initializing SNTP");
-  sntp_setoperatingmode(SNTP_OPMODE_POLL);
-  sntp_setservername(0, "pool.ntp.org");
-  sntp_init();
+  configTime(0,0,"pool.ntp.org");
 }
 
 static void obtain_time(void) {
@@ -110,42 +212,20 @@ static void obtain_time(void) {
   Serial.println("ready.");
 }
 
-static void printTime() {
+void showTime() {
   time_t now = 0;
   struct tm timeinfo;
   time(&now);
   char strftime_buf[64];
-  // Set timezone to Eastern Standard Time and print local time
-  setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
+  // Set timezone for America/Bogota
+  setenv("TZ", "<-05>5", 1);
   tzset();
   localtime_r(&now, &timeinfo);
   strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-  Serial.print("The current date/time in New York is: ");
-  Serial.println(strftime_buf);
+  //Serial.println(strftime_buf);
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.drawString(DISPLAY_WIDTH / 2, ((DISPLAY_HEIGHT / 2)-24), strftime_buf);
-}
-
-void setup() {
-
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("== ESP32 Booting ==");
-
-  display.init();
-  display.flipScreenVertically();
-  display.setContrast(255);
-  display.clear();
-  Serial.println("OLED ready");
-
-  // Init touch callbacks
-  touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
-  touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
-  Serial.println("Buttons ready");
-
-  showWelcome();
-  Serial.println("== Setup ready ==");
+  display.drawString(display.getWidth() / 2, ((display.getHeight()/ 2)-24), strftime_buf);
 }
 
 void showTOTPCode() {
@@ -162,20 +242,46 @@ void showTOTPCode() {
       Serial.print(timeinfo.tm_year);
       Serial.print(" [");
       Serial.print(code);
-      Serial.println("]"); 
+      Serial.println("]");
     }
   }
   display.clear();
-  printTime();
-  display.setFont(ArialMT_Plain_16);
-  display.drawString(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, code);
+  showTime();
+  display.setFont(ArialMT_Plain_24);
+  display.drawString(display.getWidth() / 2, (display.getHeight()/ 2)+5, code);
+  // show revision code
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_RIGHT);
+  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
   display.display();
+}
+
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println("== ESP32 Booting ==");
+
+  display.init();
+  display.flipScreenVertically();
+  display.setContrast(128);
+  display.clear();
+  Serial.println("OLED ready");
+  // Init touch callbacks
+  touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
+  touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
+  Serial.println("Buttons ready");
+  showWelcome();
+  Serial.println("== Setup ready ==");
+  setupBLE();
 }
 
 void loop() {
 
   if (wifi.isWifiEnable)
     ArduinoOTA.handle();
+  else
+    showTOTPCode();
 
   if (touch2detected) {
     touch2detected = false;
@@ -196,19 +302,7 @@ void loop() {
       touch3count = 0;
       if (wifi.isWifiEnable) wifi.disableWifi();
       else if (wifi.init()) obtain_time();
+      delay(200);
     }
   }
-
-  if(!wifi.isWifiEnable)showTOTPCode();
-
-  delay(10); // fix for OTA upload freeze
-
-  /*
-  if(poweroff++>1000000){
-    Serial.println("Auto Power Off");
-    poweroff=0;
-    suspend();
-  }
-  */
 }
-
