@@ -180,7 +180,7 @@ void suspend(){
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.drawString(display.getWidth()/2, display.getHeight()/2, "Suspending..");
   display.display();
-  delay(3000);
+  delay(1000);
   display.clear();
   display.display();
   esp_deep_sleep_enable_touchpad_wakeup();
@@ -209,7 +209,7 @@ static void obtain_time(void) {
   Serial.println("ready.");
 }
 
-static void printTime() {
+void showTime() {
   time_t now = 0;
   struct tm timeinfo;
   time(&now);
@@ -243,9 +243,13 @@ void showTOTPCode() {
     }
   }
   display.clear();
-  printTime();
+  showTime();
   display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth() / 2, display.getHeight()/ 2, code);
+  // show revision code
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_RIGHT);
+  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION);
   display.display();
 }
 
@@ -295,6 +299,7 @@ void loop() {
       touch3count = 0;
       if (wifi.isWifiEnable) wifi.disableWifi();
       else if (wifi.init()) obtain_time();
+      delay(200);
     }
   }
 }
