@@ -268,6 +268,8 @@ void setup() {
   display.setContrast(128);
   display.clear();
   Serial.println("OLED ready");
+  wifi.disableWifi();
+  Serial.println("Disabled wifi");
   // Init touch callbacks
   touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
   touchAttachInterrupt(T3, gotTouch3, THRESHOLD);

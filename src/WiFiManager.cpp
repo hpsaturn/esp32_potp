@@ -102,11 +102,10 @@ bool WiFiManager::init(){
 }
 
 void WiFiManager::disableWifi(){
-  if(isWifiEnable){
-    isWifiEnable = false;
-    Serial.println("Disabling WiFi..");
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-    // ESP.restart();
-  }
+  isWifiEnable = false;
+  Serial.println("Disabling WiFi..");
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_MODE_NULL);
+  // ESP.restart();
 }
