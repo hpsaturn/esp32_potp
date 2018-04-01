@@ -13,7 +13,7 @@
 #include <ArduinoOTA.h>
 #include "OLEDDisplay.h"
 
-#define MAX_RECONNECT 1
+#define MAX_RECONNECT 5
 
 class WiFiManager
 {
@@ -36,7 +36,7 @@ class WiFiManager
 
     // WiFi setup, define secrets on global enveiroment
     const char *ssid         = WIFI_SSID;
-    
+
     const char *password     = WIFI_PASS;
 
     bool isEnableOTA = false;
