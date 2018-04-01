@@ -183,9 +183,10 @@ void suspend(){
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.drawString(display.getWidth()/2, display.getHeight()/2, "Suspending..");
   display.display();
-  delay(1000);
+  delay(500);
   display.clear();
   display.display();
+  wifi.disableWifi();
   esp_deep_sleep_enable_touchpad_wakeup();
   esp_deep_sleep_start();
 }
@@ -273,7 +274,7 @@ void setup() {
   Serial.println("Buttons ready");
   showWelcome();
   Serial.println("== Setup ready ==");
-  setupBLE();
+  // setupBLE();
 }
 
 void loop() {

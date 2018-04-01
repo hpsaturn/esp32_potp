@@ -56,8 +56,10 @@ bool WiFiManager::init(){
   Serial.print("WiFi Setup => connecting to ");
   Serial.println(ssid);
 
-  WiFi.mode(WIFI_STA);
   WiFi.begin (ssid, password);
+  WiFi.mode(WIFI_STA);
+  WiFi.reconnect();
+  delay(100);
 
   while (WiFi.waitForConnectResult() != WL_CONNECTED && reconnect<MAX_RECONNECT) {
     Serial.print("Connection Failed! try to reconnect:");
@@ -90,6 +92,8 @@ bool WiFiManager::init(){
     display->clear();
     display->drawString(display->getWidth()/2, display->getHeight()/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display->display();
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
     delay(1000);
   }
 
@@ -99,10 +103,10 @@ bool WiFiManager::init(){
 
 void WiFiManager::disableWifi(){
   if(isWifiEnable){
+    isWifiEnable = false;
     Serial.println("Disabling WiFi..");
-    esp_wifi_set_ps(WIFI_PS_MODEM);
-    esp_wifi_set_mode(WIFI_MODE_NULL);
     WiFi.disconnect(true);
-    ESP.restart();
+    WiFi.mode(WIFI_OFF);
+    // ESP.restart();
   }
 }
