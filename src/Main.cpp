@@ -36,6 +36,9 @@ static BLEUUID serviceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
 // The characteristic of the remote service we are interested in.
 static BLEUUID    charUUID("0d563a58-196a-48ce-ace2-dfec78acc814");
 
+String VERSION_CODE = "rev";
+int VCODE = SRC_REV;
+
 static BLEAddress *pServerAddress;
 static boolean doConnect = false;
 static boolean connected = false;
@@ -249,7 +252,8 @@ void showTOTPCode() {
   // show revision code
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION);
+  Serial.println(VERSION_CODE);
+  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
   display.display();
 }
 
