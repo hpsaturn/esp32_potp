@@ -63,6 +63,7 @@ bool WiFiManager::init(){
     Serial.print("Connection Failed! try to reconnect:");
     Serial.println(reconnect);
     reconnect++;
+    delay(100);
   }
 
   reconnect=0;
@@ -89,6 +90,7 @@ bool WiFiManager::init(){
     display->clear();
     display->drawString(display->getWidth()/2, display->getHeight()/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display->display();
+    delay(1000);
   }
 
   return isWifiEnable;
