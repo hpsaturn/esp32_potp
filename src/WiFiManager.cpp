@@ -53,11 +53,13 @@ bool WiFiManager::init(){
   String msg = "WiFi Setup\nConnecting to ";
   display->drawString(display->getWidth()/2, display->getHeight()/2 - 10,msg+ssid);
   display->display();
-  Serial.print("WiFi Setup => connecting to ");
+  Serial.print("-->WiFi connecting to ");
   Serial.println(ssid);
 
-  WiFi.mode(WIFI_STA);
   WiFi.begin (ssid, password);
+  WiFi.mode(WIFI_STA);
+  WiFi.reconnect();
+  delay(100);
 
   while (WiFi.waitForConnectResult() != WL_CONNECTED && reconnect<MAX_RECONNECT) {
     Serial.print("Connection Failed! try to reconnect:");
@@ -69,7 +71,7 @@ bool WiFiManager::init(){
   reconnect=0;
 
   if(WiFi.isConnected()){
-    Serial.println("WiFi ready");
+    Serial.println("-->WiFi ready");
     WiFi.setHostname("esp32potp");
     display->clear();
 
@@ -80,7 +82,7 @@ bool WiFiManager::init(){
     display->setFont(ArialMT_Plain_10);
     display->drawString(display->getWidth()/2, display->getHeight()/2, "Ready for OTA:\n" + WiFi.localIP().toString());
     display->display();
-    Serial.println("OTA ready");
+    Serial.println("-->OTA ready");
 
     isWifiEnable=true;
   }
@@ -90,6 +92,8 @@ bool WiFiManager::init(){
     display->clear();
     display->drawString(display->getWidth()/2, display->getHeight()/2 - 10, "Wifi Setup Failed!\nPress B to reboot");
     display->display();
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
     delay(1000);
   }
 
@@ -98,11 +102,10 @@ bool WiFiManager::init(){
 }
 
 void WiFiManager::disableWifi(){
-  if(isWifiEnable){
-    Serial.println("Disabling WiFi..");
-    esp_wifi_set_ps(WIFI_PS_MODEM);
-    esp_wifi_set_mode(WIFI_MODE_NULL);
-    WiFi.disconnect(true);
-    ESP.restart();
-  }
+  isWifiEnable = false;
+  Serial.println("-->Disabling WiFi..");
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_MODE_NULL);
+  // ESP.restart();
 }
