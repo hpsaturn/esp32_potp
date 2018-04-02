@@ -76,18 +76,18 @@ void suspend(){
 
 /**************************   NTP HANDLING   **********************************/
 
-static void initialize_sntp(void) {
+static void initSNTP(void) {
   Serial.println("-->Initializing SNTP");
   configTime(0,0,"pool.ntp.org");
 }
 
-static void obtain_time(void) {
-  initialize_sntp();
+static void getTimeFromSNTP(void) {
+  initSNTP();
   // wait for time to be set
   time_t now = 0;
   struct tm timeinfo = {0};
   int retry = 0;
-  const int retry_count = 10;
+  const int retry_count = 20;
   Serial.print("-->Waiting for system time to be set.");
   while (timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
     Serial.print(".");
@@ -108,49 +108,52 @@ void showWelcome(){
   display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 POTP");
   display.display();
   Serial.println("-->Welcome screen ready");
-  delay(500);
+  delay(500); // TODO: remove if bluetooth will be scan
 }
 
-void showTime() {
-  time_t now = 0;
-  struct tm timeinfo;
-  time(&now);
-  char timebuf[64];
-  localtime_r(&now, &timeinfo);
-  strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S", &timeinfo);
-  //Serial.println(timebuf);
+void showTime(char timebuf[]) {
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.drawString(display.getWidth() / 2, ((display.getHeight()/ 2)-24),timebuf);
 }
 
-void showTOTPCode() {
+void showRevisionCode(){
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_RIGHT);
+  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
+}
+
+void showOTPCode(String OTPcode){
+  display.setFont(ArialMT_Plain_24);
+  display.drawString(display.getWidth() / 2, (display.getHeight()/ 2)+5, OTPcode);
+}
+
+void calcOTPCodeAndPrintScreen() {
   time_t now;
   struct tm timeinfo;
+  char timebuf[64];
   char *newCode = totp.getCode(time(&now));
   localtime_r(&now, &timeinfo);
+  strftime(timebuf, sizeof(timebuf),"%Y %a, %d %b %H:%M:%S", &timeinfo);
   if (strcmp(code, newCode) != 0) {
     strcpy(code, newCode);
     if (timeinfo.tm_year < (2016 - 1900)) {
-      Serial.println(
-          "Time is not set yet. Connecting to WiFi and getting time over NTP.");
+      Serial.println("Time is not set yet! PRESS RIGHT BUTTON! (connect to NTP)");
     } else {
-      char timebuf[64];
-      strftime(timebuf, sizeof(timebuf),"[%Y.%m.%d %H:%M:%S] =>OTP:", &timeinfo);
       Serial.print(timebuf);
-      Serial.print("[");
+      Serial.print(" ==> OTP code: [");
       Serial.print(code);
       Serial.println("]");
     }
   }
   display.clear();
-  showTime();
-  display.setFont(ArialMT_Plain_24);
-  display.drawString(display.getWidth() / 2, (display.getHeight()/ 2)+5, code);
+  // show current time (clock)
+  showTime(timebuf);
+  // show OTP code
+  showOTPCode(code);
   // show revision code
-  display.setFont(ArialMT_Plain_10);
-  display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
+  showRevisionCode();
+  // print display
   display.display();
 }
 
@@ -186,10 +189,10 @@ void setup() {
 ******************************************************************************/
 
 void loop() {
-  if (wifi.isWifiEnable)
+  if (wifi.isWifiEnable) // OTA mode
     ArduinoOTA.handle();
-  else
-    showTOTPCode();
+  else                   // OTPcode mode
+    calcOTPCodeAndPrintScreen();
 
   // touch LEFT capture
   if (touch2detected) {
@@ -210,7 +213,7 @@ void loop() {
       Serial.println("Touch 3 (GPIO15) reached");
       touch3count = 0;
       if (wifi.isWifiEnable) wifi.disableWifi();
-      else if (wifi.init()) obtain_time();
+      else if (wifi.init()) getTimeFromSNTP();
       delay(200);
     }
   }
