@@ -103,7 +103,7 @@ bool WiFiManager::init(){
 
 void WiFiManager::disableWifi(){
   isWifiEnable = false;
-  Serial.println("Disabling WiFi..");
+  Serial.println("-->Disabling WiFi..");
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_MODE_NULL);

@@ -127,11 +127,12 @@ bool setupBLE(){
   BLEScan* pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(true);
-  pBLEScan->start(30);
+  Serial.println("Starting scanning..");
+  pBLEScan->start(1);
+  Serial.println("-->BLE setup ready");
 }
 
 // ymqw 2tcw 7ta3 wfeo fykk 7mys vhu2 drqj
-//uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
 uint8_t hmacKey[] = {0xea,0x41,0x68,0x5c,0x9b,0x10,0x13,0x5d,0x8c,0xa0,0x35,0x05,0x38,0xcb,0xa9,0x96,0x75,0xa0,0x5a,0xaf};
 
 TOTP totp = TOTP(hmacKey, 20);
@@ -165,14 +166,13 @@ void reboot(){
 }
 
 void showWelcome(){
-  Serial.println("Welcome ready");
   isPowerOff=false;
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 POTP");
   display.display();
-  delay(1000);
+  Serial.println("-->Welcome screen ready");
 }
 
 void suspend(){
@@ -267,16 +267,15 @@ void setup() {
   display.flipScreenVertically();
   display.setContrast(128);
   display.clear();
-  Serial.println("OLED ready");
+  Serial.println("-->OLED ready");
   wifi.disableWifi();
-  Serial.println("Disabled wifi");
   // Init touch callbacks
   touchAttachInterrupt(T2, gotTouch2, THRESHOLD);
   touchAttachInterrupt(T3, gotTouch3, THRESHOLD);
-  Serial.println("Buttons ready");
+  Serial.println("-->Buttons ready");
   showWelcome();
+  setupBLE();
   Serial.println("== Setup ready ==");
-  // setupBLE();
 }
 
 void loop() {
