@@ -53,7 +53,7 @@ bool WiFiManager::init(){
   String msg = "WiFi Setup\nConnecting to ";
   display->drawString(display->getWidth()/2, display->getHeight()/2 - 10,msg+ssid);
   display->display();
-  Serial.print("WiFi Setup => connecting to ");
+  Serial.print("-->WiFi connecting to ");
   Serial.println(ssid);
 
   WiFi.begin (ssid, password);
@@ -71,7 +71,7 @@ bool WiFiManager::init(){
   reconnect=0;
 
   if(WiFi.isConnected()){
-    Serial.println("WiFi ready");
+    Serial.println("-->WiFi ready");
     WiFi.setHostname("esp32potp");
     display->clear();
 
@@ -82,7 +82,7 @@ bool WiFiManager::init(){
     display->setFont(ArialMT_Plain_10);
     display->drawString(display->getWidth()/2, display->getHeight()/2, "Ready for OTA:\n" + WiFi.localIP().toString());
     display->display();
-    Serial.println("OTA ready");
+    Serial.println("-->OTA ready");
 
     isWifiEnable=true;
   }
