@@ -55,6 +55,16 @@ For faster firmare updates via air (OTA)
 platformio run --target upload --upload-port 192.168.1.107
 ``` 
 
+##### Library installation Troubleshooting
+
+if you have the next error:
+
+```C
+src/Main.cpp:27:18: fatal error: sha1.h: No such file or directory
+compilation terminated.
+```
+it is because the TOTP Arduino library is broken, please clean and remove hidden directories with `rm -rf .pioenvs .piolibdeps` and run `git pull origin master` again.
+
 ## Basic Connection
 
 ![alt text][drv8825]
