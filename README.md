@@ -25,13 +25,13 @@ PlatformIO DIY project for WeMOS like board with ESP32 and OLED SSD1306 display,
 
 ## Dependencies
 
-Before install [PlatformIO](http://platformio.org/) open source ecosystem for IoT development.
+Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development.
 
 ## Compile and firmware upload
 
 #### Setup WiFi
 
-Before, please setup your WiFi on `secrets.load` and run:
+Setup your WiFi on `secrets.load` and run:
 
 ``` bash
 git clone https://github.com/hpsaturn/esp32_wemos_oled.git
@@ -66,9 +66,9 @@ it is because the TOTP Arduino library is broken, please clean and remove hidden
 
 ## Basic Connection
 
-![alt text][drv8825]
+![alt text][diagram_pinout]
 
-[drv8825]:https://github.com/hpsaturn/esp32_wemos_oled/blob/master/assets/diagram00.jpg  "General connection for WeMOS OLED"
+[diagram_pinout]:https://github.com/hpsaturn/esp32_wemos_oled/blob/master/assets/diagram00.jpg  "General connection for WeMOS OLED"
 
 ## Board WeMOS like OLED:
 
