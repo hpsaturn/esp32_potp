@@ -31,14 +31,13 @@ Before install [PlatformIO](http://platformio.org/) open source ecosystem for Io
 
 #### Setup WiFi
 
-Before, please setup your WiFi on `secrets.load.sample` and run:
+Before, please setup your WiFi on `secrets.load` and run:
 
 ``` bash
 git clone https://github.com/hpsaturn/esp32_wemos_oled.git
 cd esp32_wemos_oled
 cp secrets.load.sample secrets.load
 chmod 755 secrets.load
-export PLATFORMIO_BUILD_FLAGS=`bash ./secrets.load`
 ```
 
 #### Compile firmware and deploy
@@ -76,8 +75,5 @@ it is because the TOTP Arduino library is broken, please clean and remove hidden
 ![alt text][wemos_oled]
 
 [wemos_oled]:https://github.com/hpsaturn/esp32_wemos_oled/blob/master/assets/wemos_oled_00.jpg  "WeMOS OLED like"
-
-
-
 
 
