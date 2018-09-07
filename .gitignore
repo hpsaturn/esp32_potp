@@ -37,9 +37,13 @@
 
 # Project
 secrets.load
-libraries
-*tags*
+secrets.load.*
 
+# IDE
+.travis.yml
+extensions.json
+settings.json
+*tags*
 .clang_complete
 .gcc-flags.json
 .vscode/.browse.c_cpp.db*
