@@ -17,11 +17,11 @@
 * platformio run --target upload --upload-port 192.168.x.x
 */
 
+#include <Arduino.h>
+#include <SSD1306.h>
+#include <sys/time.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h>
-#include <Wire.h>        // Only needed for Arduino 1.6.5 and earlier
-#include "SSD1306Wire.h" // alias for `#include "SSD1306Wire.h"`
 #include "WiFiManager.h"
 #include "esp_sleep.h"
 #include "sha1.h"
