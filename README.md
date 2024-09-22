@@ -48,7 +48,7 @@ platformio run --target upload
 
 #### OTA Updates (Optional)
 
-For faster firmare updates via air (OTA)
+For faster firmware updates via air (OTA)
 
 ``` javascript
 platformio run --target upload --upload-port 192.168.1.107
